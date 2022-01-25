@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
         // On Appel notre fonction qui va nous retourné notre produit de l'API
         let product = await GetProduct(productId);
-        console.log(product);
+
         // Fonction d'affichage du produit.
         DisplayProduct(product);
 
@@ -75,11 +75,30 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     }
 
+    //-------------------Initialisation Class Produit-------------------//
+    //---------------------------------------------------------------------//
+    class ProductClass {
+        constructor(id, name, color, qty, imgurl, price, alt) {
+            this.id = id;
+            this.name = name;
+            this.color = color;
+            this.qty = qty;
+            this.imgurl = imgurl;
+            this.price = price;
+            this.alt = alt;
+        }
+    }
+
+    // --------------------  ajout au panier --------------------------//
+
     async function BtnClick(product) {
         // Initialisation des variables.
         let colorChoosen = "";
         let qty = "";
+        let qtyChoosen = "";
         let BtnPanier = document.getElementById("addToCart");
+
+
 
         // Sélection des couleurs avec sont comportement au change.
         let colorSelection = document.getElementById("colors");
@@ -94,8 +113,49 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
         BtnPanier.addEventListener("click", function () {
 
+            // Initialisation variable
+            let ProductLocalStorage = [];
+            let oldQty = 0;
+
+
+            for (let i = 0; i < localStorage.length; i++) {
+                ProductLocalStorage[i] = JSON.parse(localStorage.getItem(localStorage.key(i)));
+
+                if (product._id === ProductLocalStorage[i].id && ProductLocalStorage[i].color === colorChoosen) {
+                    oldQty = ProductLocalStorage[i].qty;
+                }
+
+            }
+
+            qtyChoosen = parseInt(oldQty) + parseInt(qty);
+
+            let productChoosen = new ProductClass(
+                product._id,
+                product.name,
+                colorChoosen,
+                qtyChoosen,
+                product.imageUrl,
+                product.price,
+                product.altTxt
+            );
+
+            // On envoie notre nouveau product au localstorage.
+            //Conditionnel si la couleur choisie et différente que rien et que la quantité choisie est supérieure ou = à 1, 
+            //et que la quantité sélectionnée est inférieure ou égale à 100. 
+
+            if (colorChoosen != "" && qtyChoosen >= 1 && qtyChoosen <= 100) {
+
+                localStorage.setItem(
+                    product.name + " " + colorChoosen,
+                    JSON.stringify(productChoosen)
+                );
+            } else {
+                alert("Veuillez renseigner une couleur et une quantité entre 1 et 100.")
+            }
 
 
         })
     }
 });
+
+
