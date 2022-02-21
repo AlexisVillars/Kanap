@@ -78,16 +78,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
     //-------------------Initialisation Class Produit-------------------//
     //---------------------------------------------------------------------//
     class ProductClass {
-        constructor(id, name, color, qty, imgurl, price, alt) {
+        constructor(id, color, qty,) {
             this.id = id;
-            this.name = name;
             this.color = color;
             this.qty = qty;
-            this.imgurl = imgurl;
-            this.price = price;
-            this.alt = alt;
         }
     }
+
 
     // --------------------  ajout au panier --------------------------//
 
@@ -127,17 +124,16 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
             }
 
+
             qtyChoosen = parseInt(oldQty) + parseInt(qty);
 
             let productChoosen = new ProductClass(
                 product._id,
-                product.name,
                 colorChoosen,
                 qtyChoosen,
-                product.imageUrl,
-                product.price,
-                product.altTxt
+
             );
+
 
             // On envoie notre nouveau product au localstorage.
             //Conditionnel si la couleur choisie et différente que rien et que la quantité choisie est supérieure ou = à 1, 
