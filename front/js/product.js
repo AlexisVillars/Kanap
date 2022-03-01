@@ -78,10 +78,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
     //-------------------Initialisation Class Produit-------------------//
     //---------------------------------------------------------------------//
     class ProductClass {
-        constructor(id, color, qty,) {
+        constructor(id, color, qty, name) {
             this.id = id;
             this.color = color;
             this.qty = qty;
+            this.name = name
         }
     }
 
@@ -131,7 +132,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
                 product._id,
                 colorChoosen,
                 qtyChoosen,
-
+                product.name
             );
 
 

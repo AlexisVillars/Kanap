@@ -1,5 +1,8 @@
-document.addEventListener("DOMContentLoaded", function (even) {
+document.addEventListener("DOMContentLoaded", function (event) {
 
+
+    //-------------------fonction principale-------------------//
+    //--------------------------------------------------------//
     async function main() {
 
         let ApiArray = [];
@@ -7,21 +10,20 @@ document.addEventListener("DOMContentLoaded", function (even) {
         // Stockage des informations de notre localstorage.
         let localStorageArray = getLocalStorageProduct();
 
-        // Appel de nos fonctions.
-
         for (let i = 0; i < localStorageArray.length; i++) {
             ApiArray.push(await GetApi(localStorageArray[i]));
         }
 
-        ConcatArray(localStorageArray, ApiArray);
+        let AllProducts = ConcatArray(localStorageArray, ApiArray);
 
-        listen();
+        DisplayProduct(AllProducts);
 
+        DisplayTotalPrice(AllProducts);
+
+        Listen(AllProducts);
     }
-    main()
 
-
-
+    main();
 
 
     function getLocalStorageProduct() {
@@ -35,17 +37,18 @@ document.addEventListener("DOMContentLoaded", function (even) {
 
     }
 
-    async function GetApi(localStorageArray) {
+    function GetApi(localStorageArray) {
 
         return fetch("http://localhost:3000/api/products/" + localStorageArray.id)
             .then(function (response) {
                 if (response.ok) {
                     return response.json();
                 }
+
             })
             .catch(function (error) {
                 console.log(error);
-            });
+            })
 
     }
 
@@ -54,7 +57,6 @@ document.addEventListener("DOMContentLoaded", function (even) {
         let AllProducts = [];
 
         for (let i = 0; i < localStorageArray.length; i++) {
-
             let ObjectProduct = {
                 altTxt: ApiArray[i].altTxt,
                 colors: localStorageArray[i].color,
@@ -66,100 +68,143 @@ document.addEventListener("DOMContentLoaded", function (even) {
                 qty: localStorageArray[i].qty
             }
 
-            displayCart(ObjectProduct);
-
             AllProducts.push(ObjectProduct);
 
         }
-
-
-        displayTotalPrice(AllProducts);
-
-
+        return AllProducts;
     }
 
     //-------------------Fonction Affichage de nos produits-------------------//
     //-----------------------------------------------------------------------//
-    function displayCart(ObjectProduct) {
+    function DisplayProduct(products) {
 
-        // On stock notre balise Html.
-        const domCreation = document.getElementById("cart__items");
-        // On push nos nouvels informations dans notre Html.
-        domCreation.insertAdjacentHTML(
-            "beforeend",
-            `<article class="cart__item" data-id="${ObjectProduct._id}">
-                            <div class="cart__item__img">
-                                <img src="${ObjectProduct.imageUrl}" alt="${ObjectProduct.altTxt}">
-                            </div>
-                            <div class="cart__item__content">
-                                <div class="cart__item__content__titlePrice">
-                                    <h2>${ObjectProduct.name} ${ObjectProduct.colors}</h2>
-                                    <p>${ObjectProduct.price}€</p>
-                                </div>
-                                <div class="cart__item__content__settings">
-                                    <div class="cart__item__content__settings__quantity">
-                                    <p>Qté : </p>
-                                    <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${ObjectProduct.qty}">
-                                </div>
-                                <div class="cart__item__content__settings__delete">
-                                    <p class="deleteItem">Supprimer</p>
-                                </div>
-                            </div>
+        for (product of products) {
+
+            // On stock notre balise Html.
+            const domCreation = document.getElementById("cart__items");
+            // On push nos nouvels informations dans notre Html.
+            domCreation.insertAdjacentHTML(
+                "beforeend",
+                `<article class="cart__item" data-id="${product._id}">
+                    <div class="cart__item__img">
+                        <img src="${product.imageUrl}" alt="${product.altTxt}">
+                    </div>
+                    <div class="cart__item__content">
+                        <div class="cart__item__content__titlePrice">
+                            <h2>${product.name} ${product.colors}</h2>
+                            <p>${product.price} €</p>
                         </div>
-                    </article>`
-        );
-
+                        <div class="cart__item__content__settings">
+                            <div class="cart__item__content__settings__quantity">
+                            <p>Qté : </p>
+                            <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${product.qty}">
+                        </div>
+                        <div class="cart__item__content__settings__delete">
+                            <p class="deleteItem">Supprimer</p>
+                        </div>
+                    </div>
+                </article>`
+            );
+        }
     }
 
     //-------------------Fonction d'affichage du calcul quantité + le prix-------------------//
     //--------------------------------------------------------------------------------------//
-    function displayTotalPrice(AllProducts) {
-
+    function DisplayTotalPrice(AllProducts) {
         // de base 2 variable a 0
         let totalPrice = 0;
         let totalQty = 0;
 
-        // Boucle for of pour pouvoir récupérer nos information dans 1 product.
         for (product of AllProducts) {
-
-            // On multiplie la quantité du produit fois le prix de notre produit.
-            totalPrice += parseInt(product.qty * product.price, 10);
-
-            // On ajoute la quantité de notre produit à 0.
-            totalQty += parseInt(product.qty, 10);
+            totalPrice += parseInt(product.qty * product.price);
+            totalQty += parseInt(product.qty);
         }
 
-        // On récupére nos parents ou on va injecter nos nouvels valeurs.
-        const DTotalQty = document.getElementById("totalQuantity");
-        const DTotalPrice = document.getElementById("totalPrice");
+        const DtotalQty = document.getElementById("totalQuantity");
+        const DtotalPrice = document.getElementById("totalPrice");
 
-        DTotalPrice.innerText = totalPrice;
-        DTotalQty.innerText = totalQty;
-
+        DtotalQty.innerText = totalQty;
+        DtotalPrice.innerText = totalPrice;
     }
 
 
-    function listen() {
+    function Listen(AllProducts) {
+        // Fonction si on veux supprimer un éléments de la liste.
+        ecoutedeleteProduct(AllProducts);
+        ecoutechangeqty(AllProducts);
 
-        //fonction d'écoute si on veux supprimer un élément
-        ecoutedeleteProduct();
     }
 
-    //-----------------------------------------   bouton supprimer   -----------------------------------//
+    function ecoutedeleteProduct(AllProducts) {
+        let deleteLink = document.querySelectorAll(".deleteItem");
 
-
-    function ecoutedeleteProduct() {
-        let deleteButton = document.querySelectorAll(".deleteItem");
-
-        deleteButton.forEach(function (input) {
+        deleteLink.forEach(function (input) {
             input.addEventListener("click", function () {
-                const productname = input;
-                console.log(productname);
-                storage.removeItem(product.name + " " + colorChoosen, JSON.stringify(productChoosen))
+                const productName = input
+                    .closest("div.cart__item__content")
+                    .querySelector("div.cart__item__content__titlePrice > h2").innerText;
 
+                let localstorageKey = JSON.parse(localStorage.getItem(productName));
+
+                localStorage.removeItem(productName);
+
+                input.closest("div.cart__item__content").parentNode.remove();
+
+                const result = AllProducts.find(AllProduct => AllProduct.name === localstorageKey.name && AllProduct.colors === localstorageKey.color);
+
+                AllProducts = AllProducts.filter(e => e !== result);
+
+                DisplayTotalPrice(AllProducts);
             })
         })
+
     }
 
+
+
+    function ecoutechangeqty(AllProducts) {
+
+        let changeselector = document.querySelectorAll(".itemQuantity");
+
+        changeselector.forEach(input => {
+            input.addEventListener("change", function (e) {
+
+                let quantity = e.target.value;
+
+                if (quantity >= 1 && quantity <= 100) {
+
+                    const productName = input
+                        .closest("div.cart__item__content")
+                        .querySelector("div.cart__item__content__titlePrice > h2").innerText;
+
+                    let localstorageKey = JSON.parse(localStorage.getItem(productName));
+
+                    localstorageKey.qty = quantity;
+
+                    localStorage.setItem(productName, JSON.stringify(localstorageKey));
+
+                    const result = AllProducts.find(AllProduct => AllProduct.name === localstorageKey.name && AllProduct.colors === localstorageKey.color);
+
+                    result.qty = quantity;
+
+                    DisplayTotalPrice(AllProducts);
+
+                } else {
+                    alert("tu t'est tromper ma caille")
+                }
+
+            })
+
+        });
+
+    }
+
+
+    function validationRegex(form) {
+
+        const stringRegex = /^[a-zA-Z-]+$/;
+        const emailRegex = /^\w+([.-]?\w+)@\w+([.-]?\w+).(.\w{2,3})+$/;
+        const adresseRegex = /^[a-zA-Z-0-9\s,.'-_]{3,}$/;
+    }
 
 });
