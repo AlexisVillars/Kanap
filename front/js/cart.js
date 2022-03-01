@@ -190,7 +190,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
                     DisplayTotalPrice(AllProducts);
 
                 } else {
-                    alert("tu t'est tromper ma caille")
+                    alert("choisir un produit entre 1 et 100")
                 }
 
             })
@@ -206,5 +206,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
         const emailRegex = /^\w+([.-]?\w+)@\w+([.-]?\w+).(.\w{2,3})+$/;
         const adresseRegex = /^[a-zA-Z-0-9\s,.'-_]{3,}$/;
     }
+
 
 });
