@@ -21,6 +21,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
         DisplayTotalPrice(AllProducts);
 
         Listen(AllProducts);
+
+        Confirmation()
     }
 
     main();
@@ -154,6 +156,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
                 AllProducts = AllProducts.filter(e => e !== result);
 
+                ecoutechangeqty(AllProducts);
+
                 DisplayTotalPrice(AllProducts);
             })
         })
@@ -200,11 +204,52 @@ document.addEventListener("DOMContentLoaded", function (event) {
     }
 
 
-    function validationRegex(form) {
+    // ------------------------------Validation du formulaire de commande ---------------------------------------//
 
+    // conditions regex et verification
+    function validationRegex(form) {
+        // conditions regex string email et adresse
         const stringRegex = /^[a-zA-Z-]+$/;
         const emailRegex = /^\w+([.-]?\w+)@\w+([.-]?\w+).(.\w{2,3})+$/;
-        const adresseRegex = /^[a-zA-Z-0-9\s,.'-_]{3,}$/;
+        const addressRegex = /^[a-zA-Z0-9\s,.'-]{3,}$/;
+        let control = true;
+        // si la valeur du form n'est pas identique : message d'erreur
+        if (!form.firstName.value.match(stringRegex)) {
+            document.getElementById("firstNameErrorMsg").innerText = "Mauvais prénom";
+            control = false;
+            // sinon aucun message
+        } else {
+            document.getElementById("firstNameErrorMsg").innerText = "";
+        }
+        if (!form.lastName.value.match(stringRegex)) {
+            document.getElementById("lastNameErrorMsg").innerText = "Mauvais nom";
+            control = false;
+        } else {
+            document.getElementById("lastNameErrorMsg").innerText = "";
+        }
+        if (!form.address.value.match(addressRegex)) {
+            document.getElementById("addressErrorMsg").innerText = "Mauvaise adresse";
+            control = false;
+        } else {
+            document.getElementById("addressErrorMsg").innerText = "";
+        }
+        if (!form.city.value.match(stringRegex)) {
+            document.getElementById("cityErrorMsg").innerText = "Mauvaise ville";
+            control = false;
+        } else {
+            document.getElementById("cityErrorMsg").innerText = "";
+        }
+        if (!form.email.value.match(emailRegex)) {
+            document.getElementById("emailErrorMsg").innerText = "Mauvais email";
+            control = false;
+        } else {
+            document.getElementById("emailErrorMsg").innerText = "";
+        }
+        if (control) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 
