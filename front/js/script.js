@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
     //-------------------fonction principale-------------------//
     //--------------------------------------------------------//
     async function main() {
-        //on fait appel à une fonction qui va nous retourné nos produits de l'API
+        //on fait appel à une fonction qui va nous retourner nos produits de l'API
         let products = await GetProducts();
         console.log(products);
         for (let article of products) {

@@ -5,29 +5,38 @@ document.addEventListener("DOMContentLoaded", function (event) {
     //--------------------------------------------------------//
     async function main() {
 
+        //tableau des produits à partir de l'API
         let ApiArray = [];
 
         // Stockage des informations de notre localstorage.
         let localStorageArray = getLocalStorageProduct();
 
+        //on push les produits dans API array
         for (let i = 0; i < localStorageArray.length; i++) {
             ApiArray.push(await GetApi(localStorageArray[i]));
         }
 
+        //concaténation de toutes les infos des produits
         let AllProducts = ConcatArray(localStorageArray, ApiArray);
 
+        //affichage des produits
         DisplayProduct(AllProducts);
 
+        //affichage du prix des produits
         DisplayTotalPrice(AllProducts);
 
+        //écoute pour la modification du panier
         Listen(AllProducts);
 
-        Confirmation()
+        //validation du formulaire et envoi sur la page de confirmation de la commande 
+        Confirmation();
+
     }
 
     main();
 
 
+    //récupéraation des produits du localStorage
     function getLocalStorageProduct() {
 
         let getLocalStorage = [];
@@ -39,6 +48,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     }
 
+    //reécupération des infos du produit depuis l'API
     function GetApi(localStorageArray) {
 
         return fetch("http://localhost:3000/api/products/" + localStorageArray.id)
@@ -54,6 +64,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     }
 
+    //création d'un nouvel objet à partir du tableau localstorage et API
     function ConcatArray(localStorageArray, ApiArray) {
 
         let AllProducts = [];
@@ -87,25 +98,27 @@ document.addEventListener("DOMContentLoaded", function (event) {
             // On push nos nouvels informations dans notre Html.
             domCreation.insertAdjacentHTML(
                 "beforeend",
-                `<article class="cart__item" data-id="${product._id}">
-                    <div class="cart__item__img">
-                        <img src="${product.imageUrl}" alt="${product.altTxt}">
+                `<article class="cart__item" data-id="${product._id}" data-color="${product.color}">
+                <div class="cart__item__img">
+                  <img src="${product.imageUrl}" alt="${product.altTxt}">
+                </div>
+                <div class="cart__item__content">
+                  <div class="cart__item__content__description">
+                    <h2>${product.name}</h2>
+                    <p>${product.colors}</p>
+                    <p>${product.price} €</p>
+                  </div>
+                  <div class="cart__item__content__settings">
+                    <div class="cart__item__content__settings__quantity">
+                      <p>Qté : </p>
+                      <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${product.qty}">
                     </div>
-                    <div class="cart__item__content">
-                        <div class="cart__item__content__titlePrice">
-                            <h2>${product.name} ${product.colors}</h2>
-                            <p>${product.price} €</p>
-                        </div>
-                        <div class="cart__item__content__settings">
-                            <div class="cart__item__content__settings__quantity">
-                            <p>Qté : </p>
-                            <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${product.qty}">
-                        </div>
-                        <div class="cart__item__content__settings__delete">
-                            <p class="deleteItem">Supprimer</p>
-                        </div>
+                    <div class="cart__item__content__settings__delete">
+                      <p class="deleteItem">Supprimer</p>
                     </div>
-                </article>`
+                  </div>
+                </div>
+              </article>`
             );
         }
     }
@@ -117,14 +130,17 @@ document.addEventListener("DOMContentLoaded", function (event) {
         let totalPrice = 0;
         let totalQty = 0;
 
+        //calcul qty et prix
         for (product of AllProducts) {
             totalPrice += parseInt(product.qty * product.price);
             totalQty += parseInt(product.qty);
         }
 
+        //récupération des parents
         const DtotalQty = document.getElementById("totalQuantity");
         const DtotalPrice = document.getElementById("totalPrice");
 
+        //affichage du prix
         DtotalQty.innerText = totalQty;
         DtotalPrice.innerText = totalPrice;
     }
@@ -137,14 +153,22 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     }
 
+    //
     function ecoutedeleteProduct(AllProducts) {
+        //définition du btn supression
         let deleteLink = document.querySelectorAll(".deleteItem");
 
         deleteLink.forEach(function (input) {
             input.addEventListener("click", function () {
-                const productName = input
+                const Name = input
                     .closest("div.cart__item__content")
-                    .querySelector("div.cart__item__content__titlePrice > h2").innerText;
+                    .querySelector("div.cart__item__content__description > h2").innerText;
+
+                const color = input
+                    .closest("div.cart__item__content")
+                    .querySelector("div.cart__item__content__description > p").innerText;
+
+                const productName = Name + " " + color;
 
                 let localstorageKey = JSON.parse(localStorage.getItem(productName));
 
@@ -177,9 +201,15 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
                 if (quantity >= 1 && quantity <= 100) {
 
-                    const productName = input
+                    const Name = input
                         .closest("div.cart__item__content")
-                        .querySelector("div.cart__item__content__titlePrice > h2").innerText;
+                        .querySelector("div.cart__item__content__description > h2").innerText;
+
+                    const color = input
+                        .closest("div.cart__item__content")
+                        .querySelector("div.cart__item__content__description > p").innerText;
+
+                    const productName = Name + " " + color;
 
                     let localstorageKey = JSON.parse(localStorage.getItem(productName));
 
@@ -252,5 +282,65 @@ document.addEventListener("DOMContentLoaded", function (event) {
         }
     }
 
+
+    function Confirmation() {
+        let orderButton = document.getElementById("order");
+        orderButton.addEventListener("click", function (event) {
+            let form = document.querySelector(".cart__order__form");
+            event.preventDefault();
+            console.log(form)
+            if (localStorage.length !== 0) {
+                if (validationRegex(form)) {
+
+                    let formInfo = {
+                        firstName: form.firstName.value,
+                        lastName: form.lastName.value,
+                        address: form.address.value,
+                        city: form.city.value,
+                        email: form.email.value
+                    }
+
+                    let products = [];
+
+                    for (let i = 0; i < localStorage.length; i++) {
+                        products[i] = JSON.parse(localStorage.getItem(localStorage.key(i))).id;
+                    }
+
+
+
+                    const order = {
+                        contact: formInfo,
+                        products: products,
+
+                    };
+
+                    const options = fetch("http://localhost:3000/api/products/order", {
+                        method: "POST",
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(order)
+                    })
+
+                    options.then(async function (response) {
+                        let infoCommande = await response.json();
+                        window.location.href = "confirmation.html?id=" + infoCommande.orderId;
+                    })
+
+
+                } else {
+                    event.preventDefault();
+                    alert("Les champs remplis ne sont pas bons.");
+                }
+
+
+            } else {
+                event.preventDefault();
+                alert("votre panier est vide.");
+            }
+        })
+
+    }
 
 });

@@ -6,10 +6,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
         // On Récupére l'Url.
         const url = new URL(window.location.href);
-        // productId = à Id récupérer en paramètre de notre Url
+        // productId =  Id à récupérer en paramètre de notre Url
         let productId = url.searchParams.get("id");
 
-        // On Appel notre fonction qui va nous retourné notre produit de l'API
+        // On Appelle notre fonction qui va nous retourner notre produit de l'API
         let product = await GetProduct(productId);
 
         // Fonction d'affichage du produit.
@@ -98,24 +98,26 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-        // Sélection des couleurs avec sont comportement au change.
+        // Sélection des couleurs avec son comportement au change.
         let colorSelection = document.getElementById("colors");
         colorSelection.addEventListener("change", function (e) {
             colorChoosen = e.target.value;
         });
 
+        //Sélection de la quantité avec son comportement au change.
         let qtySelection = document.getElementById("quantity");
         qtySelection.addEventListener("change", function (e) {
             qty = e.target.value;
         });
 
+        //écoute du btn panier au click
         BtnPanier.addEventListener("click", function () {
 
             // Initialisation variable
             let ProductLocalStorage = [];
             let oldQty = 0;
 
-
+            //on stoque la quantité du localstorage si l'élément est deja present
             for (let i = 0; i < localStorage.length; i++) {
                 ProductLocalStorage[i] = JSON.parse(localStorage.getItem(localStorage.key(i)));
 
@@ -125,7 +127,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
             }
 
-
+            // la quantité finale est l'addition de l'ancienne quantité et de la nouvelle
             qtyChoosen = parseInt(oldQty) + parseInt(qty);
 
             let productChoosen = new ProductClass(
@@ -136,9 +138,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
             );
 
 
-            // On envoie notre nouveau product au localstorage.
-            //Conditionnel si la couleur choisie et différente que rien et que la quantité choisie est supérieure ou = à 1, 
-            //et que la quantité sélectionnée est inférieure ou égale à 100. 
+
 
             if (colorChoosen != "" && qtyChoosen >= 1 && qtyChoosen <= 100) {
 
