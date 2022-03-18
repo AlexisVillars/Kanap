@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
             // la quantité finale est l'addition de l'ancienne quantité et de la nouvelle
             qtyChoosen = parseInt(oldQty) + parseInt(qty);
-
+            //nouvelle instance de classe contenant les infos du produit choisis : Id, couleur, quantité, et nom du produit 
             let productChoosen = new ProductClass(
                 product._id,
                 colorChoosen,
@@ -139,9 +139,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-
+            //si une couleur est choisis et une quantité choisie entre 1 et 100
             if (colorChoosen != "" && qtyChoosen >= 1 && qtyChoosen <= 100) {
-
+                //on push dans le localstorage la clé contenant le nom du produit et sa couleur
+                //et en valeur productChoosen
                 localStorage.setItem(
                     product.name + " " + colorChoosen,
                     JSON.stringify(productChoosen)

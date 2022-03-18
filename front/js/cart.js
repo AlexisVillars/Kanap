@@ -16,16 +16,16 @@ document.addEventListener("DOMContentLoaded", function (event) {
             ApiArray.push(await GetApi(localStorageArray[i]));
         }
 
-        //concaténation de toutes les infos des produits
+        //création d'un nouvel objet à partir du tableau localstorage et API
         let AllProducts = ConcatArray(localStorageArray, ApiArray);
 
         //affichage des produits
         DisplayProduct(AllProducts);
 
-        //affichage du prix des produits
+        //affichage du calcul quantité et prix
         DisplayTotalPrice(AllProducts);
 
-        //écoute pour la modification du panier
+        //modification du panier
         Listen(AllProducts);
 
         //validation du formulaire et envoi sur la page de confirmation de la commande 
@@ -36,7 +36,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
     main();
 
 
-    //récupéraation des produits du localStorage
+    //-------------------------- Stockage des informations de notre localstorage.------------------------------//
+    //--------------------------------------------------------------------------------------------------------//
     function getLocalStorageProduct() {
 
         let getLocalStorage = [];
@@ -48,7 +49,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     }
 
-    //reécupération des infos du produit depuis l'API
+    //----------------------------------reécupération des infos du produit depuis l'API-------------------------------------------------//
+    //---------------------------------------------------------------------------------------------------------------------------------//
     function GetApi(localStorageArray) {
 
         return fetch("http://localhost:3000/api/products/" + localStorageArray.id)
@@ -64,7 +66,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     }
 
-    //création d'un nouvel objet à partir du tableau localstorage et API
+    //------------------------------création d'un nouvel objet à partir du tableau localstorage et API-------------------------//
+    //------------------------------------------------------------------------------------------------------------------------//
     function ConcatArray(localStorageArray, ApiArray) {
 
         let AllProducts = [];
@@ -93,9 +96,9 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
         for (product of products) {
 
-            // On stock notre balise Html.
+            // On stocke notre balise Html.
             const domCreation = document.getElementById("cart__items");
-            // On push nos nouvels informations dans notre Html.
+            // On push nos nouvelles informations dans notre Html.
             domCreation.insertAdjacentHTML(
                 "beforeend",
                 `<article class="cart__item" data-id="${product._id}" data-color="${product.color}">
@@ -146,8 +149,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
     }
 
 
+    //-----------------------------------fonction pour modifier la quantité et supprimer des produits -----------------------//
+    //----------------------------------------------------------------------------------------------------------------------//
+
     function Listen(AllProducts) {
-        // Fonction si on veux supprimer un éléments de la liste.
         ecoutedeleteProduct(AllProducts);
         ecoutechangeqty(AllProducts);
 
@@ -157,6 +162,17 @@ document.addEventListener("DOMContentLoaded", function (event) {
     function ecoutedeleteProduct(AllProducts) {
         //définition du btn supression
         let deleteLink = document.querySelectorAll(".deleteItem");
+
+        //au click pour chaque deleteLink : -création des variables Name et color
+        //                                  -création de la variable prouductName
+        //                                  -récupération du produit à supprimer dans le local storage
+        //                                  -supression du produit du local storage
+        //                                  -supression du produit dans le html
+        //                                  -on récupère le produit à supprimer dans AllProduct
+        //                                  -filtre pour conserver les produits différents du produit à supprimer 
+        //                                  -appel de la fonction ecoutechangeqty pour actualiser la quantité après supression
+        //                                  -appel de la fonction DisplayTotalPrice pou actualiser l'affichage de prix
+
 
         deleteLink.forEach(function (input) {
             input.addEventListener("click", function () {
@@ -171,6 +187,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
                 const productName = Name + " " + color;
 
                 let localstorageKey = JSON.parse(localStorage.getItem(productName));
+
 
                 localStorage.removeItem(productName);
 
@@ -191,9 +208,15 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
 
     function ecoutechangeqty(AllProducts) {
-
+        // définition du selecteur changeselector 
         let changeselector = document.querySelectorAll(".itemQuantity");
 
+        // au changement de la valeur qty sur le selecteur changeselector (entre 1 et 100)  -création des variables Name et color
+        //                                                                                  -création de la variable prouductName
+        //                                                                                  -récupération du produit à modifier dans le local storage
+        //                                                                                  -on modifie la quantité dans le local storage
+        //                                                                                  -on récupère le produit dans all product et on lui donne la quantité du local storage
+        //                                                                                  -on actualise l'affichage de la quantité 
         changeselector.forEach(input => {
             input.addEventListener("change", function (e) {
 
@@ -235,6 +258,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
 
     // ------------------------------Validation du formulaire de commande ---------------------------------------//
+    //-----------------------------------------------------------------------------------------------------------//
 
     // conditions regex et verification
     function validationRegex(form) {
@@ -283,15 +307,23 @@ document.addEventListener("DOMContentLoaded", function (event) {
     }
 
 
+    //-----------------------------validation du formulaire et envoi sur la page de confirmation de la commande ------------------------//
+    //----------------------------------------------------------------------------------------------------------------------------------//
+
     function Confirmation() {
+        //définition du boutton order
         let orderButton = document.getElementById("order");
+        //on écoute au click
         orderButton.addEventListener("click", function (event) {
+            //récupération du formulaire
             let form = document.querySelector(".cart__order__form");
             event.preventDefault();
             console.log(form)
+            //si le panier n'est pas vide
             if (localStorage.length !== 0) {
+                //si la validation du formulaire est bonne 
                 if (validationRegex(form)) {
-
+                    //on récupère dans le formulaire ce que l'on va envoyer à lAPI
                     let formInfo = {
                         firstName: form.firstName.value,
                         lastName: form.lastName.value,
@@ -301,19 +333,19 @@ document.addEventListener("DOMContentLoaded", function (event) {
                     }
 
                     let products = [];
-
+                    //on stocke dans le tableau product les Id des produits du localstorage
                     for (let i = 0; i < localStorage.length; i++) {
                         products[i] = JSON.parse(localStorage.getItem(localStorage.key(i))).id;
                     }
 
 
-
+                    //on créé un objet contenant ce que l'on va envoyer au Backend
                     const order = {
                         contact: formInfo,
                         products: products,
 
                     };
-
+                    //envoi des informations au backend
                     const options = fetch("http://localhost:3000/api/products/order", {
                         method: "POST",
                         headers: {
@@ -322,7 +354,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
                         },
                         body: JSON.stringify(order)
                     })
-
+                    //on stocke dans une variable la réponse de l'Api
+                    //on redirige vers l'url de page de confirmation contenant le numéro de commande dans l'url
                     options.then(async function (response) {
                         let infoCommande = await response.json();
                         window.location.href = "confirmation.html?id=" + infoCommande.orderId;
